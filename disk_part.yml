@@ -1,0 +1,48 @@
+---
+- hosts: master
+  become: true
+  tasks:
+    - name: 1st partition
+      parted: 
+        device: /dev/sdb
+        number: 1
+        state: present
+        part_start: 1KiB
+        part_end: 1GiB
+        flags: [lvm]
+        part_type: primary
+     
+    
+    - name: 2nd partition
+      parted:
+        device: /dev/sdb
+        number: 2
+        state: present 
+        part_start: 2GiB
+        part_end: 3GiB
+        flags: [lvm]
+        part_type: primary
+
+    - name: create pv
+      lvg:
+        vg: myvg
+        pvs: /dev/sdb1
+    - name: create lv
+      lvol:
+        vg: myvg
+        lv: mylv
+        size: 500M
+    - name: apply file system to lv
+      filesystem:
+        fstype: xfs
+        dev: /dev/myvg/mylv 
+    - name: mount the created lvm
+      mount:
+        path: /lvmmount
+        src: /dev/myvg/mylv
+        fstype: xfs
+        opts: rw
+        state: mounted
+        boot: 1
+        passno: 2
+
