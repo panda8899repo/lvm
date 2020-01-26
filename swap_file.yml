@@ -1,0 +1,22 @@
+---
+- hosts: master
+  become: true
+  remote_user: ansible
+  tasks: 
+    - name: Create swap space
+      command: dd if=/dev/zero of=/extraswap bs=1M count=512
+      #when: ansible_swapfree_mb < 1
+
+    - name: Make swap
+      command: mkswap /extraswap
+      #when: ansible_swapfree_mb < 1
+
+    - name: Add to fstab
+      lineinfile:
+        path: /etc/fstab 
+        line: "/extraswap swap swap rw 0 0" 
+    - name: Turn swap on
+      command: swapon -a
+
+    - name: Set swapiness
+      shell: echo 0 | sudo tee /proc/sys/vm/swappiness

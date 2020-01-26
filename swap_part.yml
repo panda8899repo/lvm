@@ -1,0 +1,16 @@
+---
+- hosts: master
+  become: true
+  tasks:
+    - name: create swap partition
+      parted:
+        device: /dev/sdb
+        part_type: primary
+        number: 2
+        state: present
+        part_start: 1GiB
+        part_end: 2GiB
+       
+    - name: apply swap file system to disk
+      command: mkswap /dev/sdb2
+      command: swapon /dev/sdb2
